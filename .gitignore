@@ -1,9 +1,10 @@
 # Dependencies
-node_modules/
-.npm
-.pnp
-.pnp.js
+*/node_modules/
+*/.npm
+*/.pnp
+*/.pnp.js
 
+node_modules/
 # Next.js
 .next/
 out/

@@ -1,5 +1,6 @@
 import express from 'express';
-import { signup, login } from '../controllers/authController.js';
+import { signup, login, verifyEmail } from '../controllers/authController.js';
+
 import { registerSchema, loginSchema } from '../validators/authValidator.js';
 
 const router = express.Router();
@@ -18,5 +19,7 @@ const validate = (schema) => (req, res, next) => {
 
 router.post('/register', validate(registerSchema), signup);
 router.post('/login', validate(loginSchema), login);
+router.get('/verify/:token', verifyEmail);
+
 
 export default router;

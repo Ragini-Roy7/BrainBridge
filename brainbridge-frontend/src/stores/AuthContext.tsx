@@ -39,17 +39,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signup = async (userData: any) => {
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, userData);
-      const { token, data } = response.data;
-      setToken(token);
-      setUser(data.user);
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      return { success: true };
+      return { success: true, message: response.data.message };
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || 'Signup failed' };
     }
   };
+
 
   const login = async (email: string, password: string) => {
     try {

@@ -53,9 +53,10 @@ export default function ProfileCreation({ onCreate }: ProfileProps) {
           <form onSubmit={handleSubmit} className="w-full flex flex-col items-center gap-12">
             {/* Avatar Selection */}
             <div className="w-full">
-              <label className="block text-slate-400 font-bold text-xs uppercase tracking-widest mb-8 text-center">
+              <label className="block text-slate-600 font-bold text-xs uppercase tracking-widest mb-8 text-center">
                  Pick Your Adventure Hero
               </label>
+
               <div className="flex flex-wrap justify-center gap-5">
                  {avatars.map((avatar, idx) => (
                     <motion.button
@@ -78,16 +79,18 @@ export default function ProfileCreation({ onCreate }: ProfileProps) {
             </div>
 
             <div className="w-full space-y-4">
-              <label className="block text-slate-400 font-bold text-xs uppercase tracking-widest ml-6">
+              <label className="block text-slate-600 font-bold text-xs uppercase tracking-widest ml-6">
                 What&apos;s Your Explorer Name?
               </label>
+
               <div className="relative group">
                 <input 
                   type="text"
                   value={childId}
                   onChange={(e) => setChildId(e.target.value)}
                   placeholder="Type your name here..."
-                  className="w-full bg-slate-50 border-4 border-slate-100 rounded-[2rem] px-10 py-8 text-3xl focus:outline-none focus:border-indigo-400 focus:bg-white transition-all text-slate-800 placeholder-slate-200 font-bold"
+                  className="w-full bg-slate-50 border-4 border-slate-100 rounded-[2rem] px-10 py-8 text-3xl focus:outline-none focus:border-indigo-400 focus:bg-white transition-all text-slate-800 placeholder-slate-400 font-bold"
+
                 />
               </div>
             </div>

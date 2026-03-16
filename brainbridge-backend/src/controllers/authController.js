@@ -8,9 +8,18 @@ const catchAsync = (fn) => {
 };
 
 export const signup = catchAsync(async (req, res, next) => {
-  const newUser = await authService.register(req.body);
-  authService.createSendToken(newUser, 201, res);
+  await authService.register(req.body);
+  res.status(201).json({
+    status: 'success',
+    message: 'Registration successful! Please check your email for verification link.',
+  });
 });
+
+export const verifyEmail = catchAsync(async (req, res, next) => {
+  const user = await authService.verifyEmail(req.params.token);
+  authService.createSendToken(user, 200, res);
+});
+
 
 export const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
@@ -21,4 +30,6 @@ export const login = catchAsync(async (req, res, next) => {
 export default {
   signup,
   login,
+  verifyEmail,
 };
+

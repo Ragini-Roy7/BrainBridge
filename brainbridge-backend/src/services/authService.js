@@ -36,9 +36,35 @@ export const register = async (userData) => {
     username,
     email,
     password,
+    verificationToken: Math.random().toString(36).substring(2, 15),
+    verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
   });
 
+  // SIMULATION: Log verification link
+  console.log('--- EMAIL VERIFICATION SIMULATION ---');
+  console.log(`To: ${email}`);
+  console.log(`Link: http://localhost:3000/verify/${newUser.verificationToken}`);
+  console.log('--------------------------------------');
+
   return newUser;
+};
+
+export const verifyEmail = async (token) => {
+  const user = await User.findOne({
+    verificationToken: token,
+    verificationTokenExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new BadRequestError('Token is invalid or has expired');
+  }
+
+  user.isVerified = true;
+  user.verificationToken = undefined;
+  user.verificationTokenExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  return user;
 };
 
 export const login = async (email, password) => {
@@ -54,8 +80,14 @@ export const login = async (email, password) => {
     throw new UnauthorizedError('Incorrect email or password');
   }
 
+  // 3) Check if user is verified
+  if (!user.isVerified) {
+    throw new UnauthorizedError('Please verify your email to login');
+  }
+
   return user;
 };
+
 
 export default {
   register,

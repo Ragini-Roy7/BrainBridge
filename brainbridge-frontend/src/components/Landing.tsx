@@ -1,9 +1,11 @@
 'use client';
 import { useLanguageStore } from '../stores/languageStore';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useAuth } from '../stores/AuthContext';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
 
 import InteractiveMascot from './InteractiveMascot';
+
 
 interface LandingProps {
   onStart: () => void;
@@ -11,14 +13,35 @@ interface LandingProps {
 
 export default function Landing({ onStart }: LandingProps) {
   const { t } = useLanguageStore();
+  const { user } = useAuth();
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowWelcome(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleLaunch = () => {
+    if (user) {
+      setIsLaunching(true);
+      setTimeout(() => {
+        onStart();
+      }, 1500); 
+    } else {
+      onStart();
+    }
+  };
+
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"]
   });
 
-  const yBackground = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const yHeroText = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const yBackground = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const yHeroText = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+
 
   return (
     <div ref={containerRef} className="w-full flex flex-col items-center max-w-7xl mx-auto pb-32">
@@ -27,12 +50,13 @@ export default function Landing({ onStart }: LandingProps) {
         {/* Decorative Floating Elements (Parallax) */}
         <motion.div 
           style={{ y: yBackground }}
-          className="absolute -top-10 -left-10 w-[400px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full animate-blob pointer-events-none" 
+          className="absolute -top-10 -left-10 w-[400px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full animate-blob pointer-events-none z-[-1]" 
         />
         <motion.div 
           style={{ y: useTransform(scrollYProgress, [0, 1], ["0%", "30%"]) }}
-          className="absolute top-20 -right-20 w-[300px] h-[300px] bg-rose-500/10 blur-[90px] rounded-full animate-blob [animation-delay:2s] pointer-events-none" 
+          className="absolute top-20 -right-20 w-[300px] h-[300px] bg-rose-500/10 blur-[90px] rounded-full animate-blob [animation-delay:2s] pointer-events-none z-[-1]" 
         />
+
 
         <motion.div 
           initial={{ opacity: 0, x: -100, rotate: -5 }}
@@ -52,12 +76,26 @@ export default function Landing({ onStart }: LandingProps) {
               🦄
             </motion.div>
             <motion.div 
-              className="absolute -bottom-10 -right-20 text-7xl select-none"
-              animate={{ y: [0, -40, 0], scale: [1, 1.2, 1] }}
-              transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+              className="absolute -bottom-10 -right-20 text-7xl select-none relative z-30"
+              animate={isLaunching ? { 
+                y: -1000, 
+                x: 500,
+                scale: 2,
+                rotate: 45,
+                opacity: [1, 1, 0]
+              } : { y: [0, -40, 0], scale: [1, 1.2, 1] }}
+              transition={isLaunching ? { duration: 1.5, ease: "easeIn" } : { duration: 4, repeat: Infinity, delay: 1 }}
             >
               🚀
+              {isLaunching && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 1, 0], scale: [1, 2, 3] }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 w-4 h-20 bg-gradient-to-t from-transparent via-orange-500 to-yellow-300 blur-md rounded-full"
+                />
+              )}
             </motion.div>
+
             <motion.div 
               className="absolute top-1/2 -right-24 text-6xl select-none"
               animate={{ x: [0, 20, 0], rotate: [0, 360] }}
@@ -76,12 +114,20 @@ export default function Landing({ onStart }: LandingProps) {
           className="flex flex-col gap-10 order-1 lg:order-2 text-center lg:text-left relative z-20"
         >
           <div className="flex flex-col gap-6">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="inline-block px-6 py-2 bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-600 rounded-full font-bold text-xs uppercase tracking-widest w-fit mx-auto lg:mx-0 shadow-sm cursor-default"
-            >
-               ✨ {t('landing.welcome') || 'Welcome to BrainBridge'}
-            </motion.div>
+            <AnimatePresence>
+              {showWelcome && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
+                  whileHover={{ scale: 1.05 }}
+                  className="inline-block px-6 py-2 bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-600 rounded-full font-bold text-xs uppercase tracking-widest w-fit mx-auto lg:mx-0 shadow-sm cursor-default"
+                >
+                   ✨ {user ? `Howdy, ${user.username}!` : (t('landing.welcome') || 'Welcome to BrainBridge')}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <h2 className="text-7xl md:text-8xl font-black text-slate-900 leading-[1.05] tracking-tight">
               {t('landing.title')}
             </h2>
@@ -92,11 +138,13 @@ export default function Landing({ onStart }: LandingProps) {
           
           <div className="flex flex-wrap gap-6 justify-center lg:justify-start">
             <button 
-              onClick={onStart}
-              className="btn-primary text-xl px-16 py-8 shadow-indigo-600/20 active:translate-y-1 transition-all"
+              onClick={handleLaunch}
+              disabled={isLaunching}
+              className={`btn-primary text-xl px-16 py-8 shadow-indigo-600/20 active:translate-y-1 transition-all ${isLaunching ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {t('landing.start')}
+              {isLaunching ? 'LIFT OFF! 🚀' : t('landing.start')}
             </button>
+
             <button 
               className="px-12 py-8 bg-white border border-slate-200 text-slate-900 rounded-[2.5rem] font-bold text-xl hover:bg-slate-50 shadow-sm active:translate-y-1 transition-all"
             >

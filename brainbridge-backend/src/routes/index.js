@@ -8,11 +8,13 @@ import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+router.use('/auth', authRoutes);
+
 router.use(protect);
 
-router.use('/auth', authRoutes);
 router.use('/sessions', sessionRoutes);
 router.use('/telemetry', telemetryRoutes);
 router.use('/predict', predictionRoutes);
+
 
 export default router;

@@ -1,22 +1,29 @@
 'use client';
 import { useState } from 'react';
 import axios from 'axios';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+
 
 import { useSessionStore } from '../stores/sessionStore';
 import { useTelemetryStore } from '../stores/telemetryStore';
+import { useAuth } from '../stores/AuthContext';
 
-import LanguageToggle from '../components/LanguageToggle';
-import Landing from '../components/Landing';
-import Consent from '../components/Consent';
-import ProfileCreation from '../components/ProfileCreation';
-import GameShell from '../components/GameShell';
-import ReportCard from '../components/ReportCard';
-import InteractiveMascot from '../components/InteractiveMascot';
 
-import LetterMirrorGame from '../games/letterMirror/LetterMirrorGame';
-import NumberJumpGame from '../games/numberJump/NumberJumpGame';
-import FocusCatcherGame from '../games/focusCatcher/FocusCatcherGame';
+import dynamic from 'next/dynamic';
+import LanguageToggle from '@/components/LanguageToggle';
+
+const Landing = dynamic(() => import('../components/Landing'), { ssr: false });
+const Consent = dynamic(() => import('../components/Consent'), { ssr: false });
+const ProfileCreation = dynamic(() => import('../components/ProfileCreation'), { ssr: false });
+const GameShell = dynamic(() => import('../components/GameShell'), { ssr: false });
+const ReportCard = dynamic(() => import('../components/ReportCard'), { ssr: false });
+const InteractiveMascot = dynamic(() => import('../components/InteractiveMascot'), { ssr: false });
+
+const LetterMirrorGame = dynamic(() => import('../games/letterMirror/LetterMirrorGame'), { ssr: false });
+const NumberJumpGame = dynamic(() => import('../games/numberJump/NumberJumpGame'), { ssr: false });
+const FocusCatcherGame = dynamic(() => import('../games/focusCatcher/FocusCatcherGame'), { ssr: false });
+
 
 type FlowState = 'landing' | 'consent' | 'profile' | 'playing' | 'loading_results' | 'report';
 
@@ -31,6 +38,8 @@ interface PredictionResults {
 export default function Home() {
   const [flow, setFlow] = useState<FlowState>('landing');
   const [results, setResults] = useState<PredictionResults | null>(null);
+  const { user, loading, logout } = useAuth();
+
   
   const { sessionId, setSession, currentGameIndex, nextGame, resetSession } = useSessionStore();
   const { addTelemetry, clearTelemetry } = useTelemetryStore();
@@ -134,10 +143,11 @@ export default function Home() {
   return (
     <main className="w-full min-h-screen overflow-x-hidden relative bg-slate-50 font-sans selection:bg-indigo-100 selection:text-indigo-900">
       {/* Global Atmospheric Background (Adventure Theme) */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
         <div className="absolute top-[-5%] left-[-5%] w-[45%] h-[45%] bg-indigo-200/20 blur-[120px] rounded-full animate-blob" />
         <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-rose-200/20 blur-[120px] rounded-full animate-blob [animation-delay:3s]" />
         <div className="absolute top-[20%] right-[10%] w-[35%] h-[35%] bg-amber-200/15 blur-[100px] rounded-full animate-blob [animation-delay:6s]" />
+
         
         {/* Magic Floating Elements */}
         <motion.div 
@@ -182,14 +192,46 @@ export default function Home() {
 
           <div className="flex items-center gap-6">
             <LanguageToggle />
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="hidden md:flex px-8 py-3 bg-slate-900 text-white rounded-full font-bold text-xs uppercase tracking-widest shadow-lg hover:shadow-indigo-500/10 transition-all border border-slate-800"
-            >
-               Login
-            </motion.button>
+            {loading ? (
+              <div className="w-20 h-8 bg-slate-200 animate-pulse rounded-full" />
+            ) : user ? (
+              <div className="flex items-center gap-3 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full">
+                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  {user.username.charAt(0).toUpperCase()}
+                </div>
+                <span className="font-bold text-slate-900 text-sm hidden sm:inline">{user.username}</span>
+                <button 
+                  onClick={logout}
+                  className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-800 ml-2"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Link href="/signup">
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="hidden md:flex px-6 py-2.5 text-slate-600 font-bold text-xs uppercase tracking-widest hover:text-indigo-600 transition-colors"
+                  >
+                     Register
+                  </motion.button>
+                </Link>
+                <Link href="/login">
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="hidden md:flex px-8 py-3 bg-slate-900 text-white rounded-full font-bold text-xs uppercase tracking-widest shadow-lg hover:shadow-indigo-500/10 transition-all border border-slate-800"
+                  >
+                     Login
+                  </motion.button>
+                </Link>
+              </div>
+
+            )}
           </div>
+
         </header>
 
         <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-10">

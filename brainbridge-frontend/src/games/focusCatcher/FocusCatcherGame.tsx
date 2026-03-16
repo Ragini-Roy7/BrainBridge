@@ -149,16 +149,17 @@ export default function FocusCatcherGame({ onGameComplete }: FocusCatcherProps) 
                 <motion.div 
                   animate={{ y: [-5, 5, -5] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="text-6xl sm:text-7xl md:text-8xl drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                  className="text-5xl sm:text-6xl md:text-7xl drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]"
                 >
                    🦋
                 </motion.div>
               </div>
             ) : (
               <div className="relative cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
-                 <span className="text-5xl sm:text-6xl md:text-7xl">🪨</span>
+                 <span className="text-4xl sm:text-5xl md:text-6xl">🪨</span>
               </div>
             )}
+
 
           </motion.div>
         ))}
